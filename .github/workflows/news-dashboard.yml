@@ -1,0 +1,78 @@
+name: Nachrichten-Dashboard
+
+on:
+  schedule:
+    # GitHub-Cron läuft in UTC. 06:00 Uhr Berlin ist im Sommer 04:00 UTC, im Winter 05:00 UTC.
+    # Beide Zeiten sind eingeplant, der Check-Schritt lässt nur die passende durch.
+    - cron: '0 4 * * *'
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: news-dashboard
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - name: Sommer-/Winterzeit prüfen
+        id: check
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          offset=$(TZ=Europe/Berlin date +%z)   # +0200 (MESZ) oder +0100 (MEZ)
+          if [ "$EVENT" != "schedule" ] \
+             || { [ "$SCHEDULE" = "0 4 * * *" ] && [ "$offset" = "+0200" ]; } \
+             || { [ "$SCHEDULE" = "0 5 * * *" ] && [ "$offset" = "+0100" ]; }; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Übersprungen: $SCHEDULE passt nicht zu Berliner Offset $offset"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.run == 'true'
+
+      - uses: actions/setup-python@v5
+        if: steps.check.outputs.run == 'true'
+        with:
+          python-version: '3.12'
+
+      - name: Sprachausgabe installieren
+        if: steps.check.outputs.run == 'true'
+        # Schlägt das fehl, liest der Browser das Briefing selbst vor
+        continue-on-error: true
+        run: pip install edge-tts==7.2.8
+
+      - name: Dashboard bauen
+        if: steps.check.outputs.run == 'true'
+        env:
+          # Optional: ohne diese Secrets entfällt der Postfach-Check einfach
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+        run: python news/build.py --out site/index.html --audio
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.check.outputs.run == 'true'
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,59 @@
+{
+  "categories": [
+    {
+      "id": "welt",
+      "title": "Welt",
+      "feeds": [
+        {"name": "tagesschau", "url": "https://www.tagesschau.de/ausland/index~rss2.xml", "top": true},
+        {"name": "DW", "url": "https://rss.dw.com/xml/rss-de-all", "top": true},
+        {"name": "SPIEGEL", "url": "https://www.spiegel.de/ausland/index.rss"}
+      ]
+    },
+    {
+      "id": "deutschland",
+      "title": "Deutschland",
+      "feeds": [
+        {"name": "tagesschau", "url": "https://www.tagesschau.de/inland/index~rss2.xml", "top": true},
+        {"name": "SPIEGEL", "url": "https://www.spiegel.de/politik/deutschland/index.rss"}
+      ]
+    },
+    {
+      "id": "wirtschaft",
+      "title": "Wirtschaft",
+      "feeds": [
+        {"name": "tagesschau", "url": "https://www.tagesschau.de/wirtschaft/index~rss2.xml", "top": true},
+        {"name": "SPIEGEL", "url": "https://www.spiegel.de/wirtschaft/index.rss"}
+      ]
+    },
+    {
+      "id": "tech",
+      "title": "Tech & Wissen",
+      "feeds": [
+        {"name": "heise", "url": "https://www.heise.de/rss/heise-top-atom.xml", "top": true},
+        {"name": "SPIEGEL", "url": "https://www.spiegel.de/wissenschaft/index.rss"}
+      ]
+    },
+    {
+      "id": "international",
+      "title": "International (EN)",
+      "lang": "en-GB",
+      "feeds": [
+        {"name": "BBC", "url": "https://feeds.bbci.co.uk/news/world/rss.xml", "top": true},
+        {"name": "The Guardian", "url": "https://www.theguardian.com/world/rss"},
+        {"name": "Al Jazeera", "url": "https://www.aljazeera.com/xml/rss/all.xml"}
+      ]
+    }
+  ],
+  "max_age_hours": 30,
+  "items_per_category": 10,
+  "briefing": {
+    "top_items": 5,
+    "items_per_category": 3,
+    "summaries": true
+  },
+  "tts": {
+    "voice_de": "de-DE-SeraphinaMultilingualNeural",
+    "voice_en": "en-GB-SoniaNeural",
+    "rate": "+0%"
+  }
+}

@@ -349,7 +349,7 @@ def main():
         print(f"WARN Postfach nicht geprüft: {reason}", file=sys.stderr)
         mailbox = "error"
     if isinstance(mailbox, dict):
-        print(f"Postfach: {mailbox['important']} wichtige Mails, "
+        print(f"Postfach: {mailbox['important'] if mailbox['important'] is not None else '–'} wichtige Mails, "
               f"{sum(mailbox['applications'].values())} zu Bewerbungen")
     briefing = build_briefing(top, sections, config["categories"], now.astimezone(TZ),
                               config.get("briefing"), mail=mail_sentence(mailbox),

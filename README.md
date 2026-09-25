@@ -47,23 +47,20 @@ bisher mit seinen eigenen Stimmen vor. Stimme und Tempo stehen in `news/feeds.js
   und macOS/iOS („Premium“/„Erweitert“, in den Bedienungshilfen nachladbar).
 - **Einstellungen** in `news/feeds.json` unter `"briefing"`: `top_items`, `items_per_category`,
   `summaries`. Eine Rubrik mit `"briefing": false` wird übersprungen, `"lang"` setzt ihre Sprache.
-- **Postfach-Check (GMX, Web.de, Gmail):** Nach der Begrüßung sagt das Briefing, wie viele
-  wichtige neue Mails warten, **nur die Anzahl**, weil Seite, MP3 und Actions-Log öffentlich sind.
-  Als wichtig zählt: ungelesen, seit gestern, kein Newsletter, keine Massen- oder No-Reply-Mail
-  (bei Gmail zusätzlich nur der Tab „Allgemein“). Es werden nur Kopfzeilen gelesen, nichts wird
-  als gelesen markiert. Der IMAP-Server ergibt sich aus der Adresse; andere Anbieter per
-  `"mail": {"host": "imap.example.de"}` in `news/feeds.json`.
+- **Bewerbungsstand (GMX, Web.de, Gmail):** Nach der Begrüßung fasst das Briefing die
+  Rückmeldungen auf Bewerbungen seit gestern zusammen, z. B. „eine Einladung zum Gespräch, zwei
+  Absagen“. **Nur Zahlen, keine Firmen**, weil Seite, MP3 und Actions-Log öffentlich sind.
+  Erkannt werden Jobangebote, Einladungen, Absagen und Eingangsbestätigungen (deutsch/englisch,
+  per Stichwort im Mailtext), Jobportal-Newsletter werden ignoriert. Das Postfach wird nur lesend
+  geöffnet, nichts wird als gelesen markiert. Der IMAP-Server ergibt sich aus der Adresse; andere
+  Anbieter per `"mail": {"host": "imap.example.de"}` in `news/feeds.json`.
   Einrichtung: im Repo unter **Settings → Secrets and variables → Actions** zwei Secrets anlegen,
-  `MAIL_USER` (Mailadresse) und `MAIL_PASSWORD`. Bei **GMX/Web.de** ist das das normale Passwort,
-  und im Postfach muss unter *Einstellungen → POP3/IMAP-Abruf* der IMAP-Zugriff eingeschaltet sein.
-  Bei **Gmail** braucht es ein App-Passwort von <https://myaccount.google.com/apppasswords>
-  (setzt die Bestätigung in zwei Schritten voraus). Ohne Secrets entfällt der Abschnitt.
-- **Bewerbungsstand:** Danach fasst das Briefing die Rückmeldungen auf Bewerbungen der letzten
-  24 Stunden zusammen, z. B. „eine Einladung zum Gespräch, zwei Absagen“. Auch hier werden nur
-  Zahlen genannt, keine Firmen. Erkannt werden Jobangebote, Einladungen, Absagen und
-  Eingangsbestätigungen (deutsch/englisch, per Stichwort im Mailtext), Jobportal-Newsletter
-  werden ignoriert. Suchbegriffe lassen sich in `news/feeds.json` unter `"mail"` →
-  `"applications_query"` anpassen.
+  `MAIL_USER` (Mailadresse) und `MAIL_PASSWORD`. Bei **GMX/Web.de** muss im Postfach unter
+  *Einstellungen → POP3/IMAP-Abruf* der IMAP-Zugriff eingeschaltet sein; mit Zwei-Faktor-Anmeldung
+  braucht es ein *anwendungsspezifisches Passwort*. Bei **Gmail** ein App-Passwort von
+  <https://myaccount.google.com/apppasswords>. Ohne Secrets entfällt der Abschnitt.
+  Optional nennt das Briefing zusätzlich die Zahl wichtiger neuer Mails (ungelesen, ohne
+  Newsletter, Massen- und No-Reply-Mails): `"mail": {"important": true}` in `news/feeds.json`.
 - `site/briefing.txt` enthält das Briefing als reinen Text, z. B. für externe TTS-Dienste.
 
 ## Lokal ausprobieren

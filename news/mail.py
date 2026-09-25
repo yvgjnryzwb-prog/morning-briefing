@@ -34,6 +34,8 @@ DEFAULTS = {
                            "OR application OR applying OR interview OR candidate OR Absage)"),
     "hours": 24,
     "max_messages": 60,
+    # Zahl wichtiger neuer Mails ansagen (sonst nur der Bewerbungsstand)
+    "important": False,
 }
 HEADERS = "FROM LIST-UNSUBSCRIBE LIST-ID PRECEDENCE AUTO-SUBMITTED"
 AUTOMATED_SENDER = re.compile(
@@ -161,10 +163,12 @@ def check_mailbox(options=None, env=os.environ, imap_factory=imaplib.IMAP4_SSL):
         imap.login(user, password)
         stage = "Posteingang"
         imap.select("INBOX", readonly=True)
-        stage = "Suche wichtige Mails"
-        uids = _search(imap, opts, opts["gmail_query"], "UNSEEN")
-        important = sum(1 for h in _fetch(imap, uids, f"BODY.PEEK[HEADER.FIELDS ({HEADERS})]")
-                        if is_personal(h))
+        important = None
+        if opts["important"]:
+            stage = "Suche wichtige Mails"
+            uids = _search(imap, opts, opts["gmail_query"], "UNSEEN")
+            important = sum(1 for h in _fetch(imap, uids, f"BODY.PEEK[HEADER.FIELDS ({HEADERS})]")
+                            if is_personal(h))
         stage = "Suche Bewerbungen"
         uids = _search(imap, opts, opts["applications_query"])
         statuses = Counter(s for raw in _fetch(imap, uids, "BODY.PEEK[]")
@@ -210,11 +214,9 @@ def _count_phrase(n, status):
 
 
 def mail_sentence(result):
-    if result is None:
+    """Satz zur Zahl wichtiger Mails; None, wenn abgeschaltet oder nicht verfügbar."""
+    if result is None or result == "error" or result["important"] is None:
         return None
-    if result == "error":
-        return ("Dein Postfach konnte heute nicht geprüft werden, "
-                "deshalb gibt es auch keinen Stand zu deinen Bewerbungen.")
     count = result["important"]
     if count == 0:
         return "In deinem Postfach ist seit gestern nichts Wichtiges eingegangen."
@@ -224,8 +226,11 @@ def mail_sentence(result):
 
 
 def applications_sentence(result):
-    if result is None or result == "error":
+    if result is None:
         return None
+    if result == "error":
+        return ("Dein Postfach konnte heute nicht geprüft werden, "
+                "deshalb gibt es keinen Stand zu deinen Bewerbungen.")
     stats = result["applications"]
     phrases = [_count_phrase(stats[s], s) for s in STATUS_WORDS if stats.get(s)]
     if not phrases:

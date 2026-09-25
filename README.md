@@ -59,6 +59,10 @@ bisher mit seinen eigenen Stimmen vor. Stimme und Tempo stehen in `news/feeds.js
   *Einstellungen → POP3/IMAP-Abruf* der IMAP-Zugriff eingeschaltet sein; mit Zwei-Faktor-Anmeldung
   braucht es ein *anwendungsspezifisches Passwort*. Bei **Gmail** ein App-Passwort von
   <https://myaccount.google.com/apppasswords>. Ohne Secrets entfällt der Abschnitt.
+  **Ohne Passwort:** Liegt `news/applications.json` vom selben Tag vor, nutzt das Briefing diese
+  Zahlen statt IMAP. Die Datei schreibt eine tägliche Claude-Routine (ca. 5:40 Uhr) über den
+  Gmail-Connector von claude.ai; sie enthält nur Datum und Zahlen, z. B.
+  `{"date": "2026-09-26", "counts": {"einladung": 1, "absage": 2}}`.
   Optional nennt das Briefing zusätzlich die Zahl wichtiger neuer Mails (ungelesen, ohne
   Newsletter, Massen- und No-Reply-Mails): `"mail": {"important": true}` in `news/feeds.json`.
 - `site/briefing.txt` enthält das Briefing als reinen Text, z. B. für externe TTS-Dienste.

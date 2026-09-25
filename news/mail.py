@@ -194,6 +194,27 @@ def check_mailbox(options=None, env=os.environ, imap_factory=imaplib.IMAP4_SSL):
                 pass
 
 
+# ---------- Zahlen aus der Claude-Routine ----------
+def load_applications_file(path, today):
+    """Bewerbungs-Zahlen aus news/applications.json, geschrieben von einer täglichen
+    Claude-Routine über den Gmail-Connector. Nur gültig, wenn vom selben Tag.
+
+    Format: {"date": "JJJJ-MM-TT", "counts": {"einladung": 1, "absage": 2, ...}}
+    Liefert dasselbe Format wie check_mailbox() oder None.
+    """
+    import json
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict) or data.get("date") != today.isoformat():
+        return None
+    counts = data.get("counts") or {}
+    stats = Counter({k: int(v) for k, v in counts.items()
+                     if k in STATUS_WORDS and isinstance(v, int) and v > 0})
+    return {"important": None, "applications": stats}
+
+
 # ---------- Sätze fürs Briefing ----------
 NUMBERS = ["keine", "eine", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun",
            "zehn", "elf", "zwölf"]

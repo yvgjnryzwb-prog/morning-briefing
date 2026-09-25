@@ -18,7 +18,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from briefing import MONTHS, WEEKDAYS, build_briefing, plain_text
-from mail import MailError, applications_sentence, check_mailbox, mail_sentence
+from mail import (MailError, applications_sentence, check_mailbox, load_applications_file,
+                  mail_sentence)
 
 HERE = Path(__file__).resolve().parent
 TZ = ZoneInfo("Europe/Berlin")
@@ -342,12 +343,17 @@ def main():
     if not any(s["items"] for s in sections):
         sys.exit("Keine einzige Meldung geladen – Dashboard wird nicht überschrieben.")
 
-    try:
-        mailbox = check_mailbox(config.get("mail"))
-    except Exception as exc:  # Log ist öffentlich: MailError enthält nur Schritt + Servermeldung
-        reason = str(exc) if isinstance(exc, MailError) else type(exc).__name__
-        print(f"WARN Postfach nicht geprüft: {reason}", file=sys.stderr)
-        mailbox = "error"
+    # Bevorzugt: Zahlen der täglichen Claude-Routine (Gmail-Connector), sonst IMAP
+    mailbox = load_applications_file(HERE / "applications.json", now.astimezone(TZ).date())
+    if mailbox:
+        print(f"Bewerbungen aus applications.json: {sum(mailbox['applications'].values())}")
+    else:
+        try:
+            mailbox = check_mailbox(config.get("mail"))
+        except Exception as exc:  # Log ist öffentlich: MailError enthält nur Schritt + Servermeldung
+            reason = str(exc) if isinstance(exc, MailError) else type(exc).__name__
+            print(f"WARN Postfach nicht geprüft: {reason}", file=sys.stderr)
+            mailbox = "error"
     if isinstance(mailbox, dict):
         print(f"Postfach: {mailbox['important'] if mailbox['important'] is not None else '–'} wichtige Mails, "
               f"{sum(mailbox['applications'].values())} zu Bewerbungen")

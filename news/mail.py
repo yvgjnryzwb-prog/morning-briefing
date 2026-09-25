@@ -213,7 +213,8 @@ def mail_sentence(result):
     if result is None:
         return None
     if result == "error":
-        return "Dein Postfach konnte nicht geprüft werden."
+        return ("Dein Postfach konnte heute nicht geprüft werden, "
+                "deshalb gibt es auch keinen Stand zu deinen Bewerbungen.")
     count = result["important"]
     if count == 0:
         return "In deinem Postfach ist seit gestern nichts Wichtiges eingegangen."

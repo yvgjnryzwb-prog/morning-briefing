@@ -72,11 +72,22 @@ def _task_list(data):
     return None
 
 
-def _field(item, keys):
+NOT_DUE = re.compile(r"erstell|created|angelegt|update|geaendert|geändert|modified|erledigt|done|"
+                     r"completed|start|begin", re.I)
+
+
+def _field(item, keys, fuzzy=False):
+    """Exakter Feldname zuerst; mit fuzzy auch Namen, die einen der Begriffe enthalten."""
     lower = {k.lower(): v for k, v in item.items()}
     for key in keys:
         if key.lower() in lower and lower[key.lower()] not in (None, ""):
             return lower[key.lower()]
+    if fuzzy:
+        for name, value in lower.items():
+            if value in (None, "") or NOT_DUE.search(name):
+                continue
+            if any(key.lower() in name for key in keys):
+                return value
     return None
 
 
@@ -98,8 +109,8 @@ def tasks_from_json(data):
         title = _field(item, TITLE_KEYS)
         if not title:
             continue
-        tasks.append({"title": str(title).strip(), "due": parse_date(_field(item, DUE_KEYS)),
-                      "done": _is_done(_field(item, DONE_KEYS))})
+        tasks.append({"title": str(title).strip(), "due": parse_date(_field(item, DUE_KEYS, fuzzy=True)),
+                      "done": _is_done(_field(item, DONE_KEYS, fuzzy=True))})
     return tasks
 
 

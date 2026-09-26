@@ -9,6 +9,7 @@ import html
 import json
 import os
 import re
+import urllib.parse
 import urllib.request
 from collections import Counter
 from datetime import date
@@ -172,16 +173,42 @@ def _structure_summary(structure):
 
 
 # ---------- Abruf ----------
+SCRIPT_RE = re.compile(r"<script[^>]*>(.*?)</script>", re.S | re.I)
+ENDPOINT_RE = re.compile(r"""fetch\(\s*[`'"]([^`'"]+)[`'"]""")
+
+
+def _get(url, opener):
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT,
+                                               "Accept": "application/json, text/html;q=0.9"})
+    with opener(req, timeout=20) as resp:
+        return resp.read().decode(resp.headers.get_content_charset() or "utf-8", "replace")
+
+
+def _endpoints(page, page_url):
+    """Datenquellen, die das Seitenskript per fetch() lädt – mit dem Schlüssel der Seite."""
+    page_params = urllib.parse.parse_qsl(urllib.parse.urlsplit(page_url).query)
+    found = []
+    for script in SCRIPT_RE.findall(page):
+        for target in ENDPOINT_RE.findall(script):
+            target = re.sub(r"\$\{[^}]*\}", "", target)  # Template-Platzhalter entfernen
+            parts = urllib.parse.urlsplit(urllib.parse.urljoin(page_url, target))
+            # leere Parameter (vorher Platzhalter) mit den Werten aus dem Seiten-Link füllen
+            params = dict(p for p in urllib.parse.parse_qsl(parts.query) if p[1])
+            for key, value in page_params:
+                params.setdefault(key, value)
+            url = urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(params)))
+            if url not in found:
+                found.append(url)
+    return found
+
+
 def fetch_tasks(env=os.environ, opener=urllib.request.urlopen):
     """Liste {title, due, done} oder None, wenn TASKS_URL nicht gesetzt ist."""
     url = (env.get("TASKS_URL") or "").strip()
     if not url:
         return None
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT,
-                                               "Accept": "application/json, text/html;q=0.9"})
     try:
-        with opener(req, timeout=20) as resp:
-            body = resp.read().decode(resp.headers.get_content_charset() or "utf-8", "replace")
+        body = _get(url, opener)
     except Exception as exc:
         raise TasksError(f"Abruf: {type(exc).__name__} {getattr(exc, 'code', '')}".strip()) from None
     try:
@@ -191,9 +218,27 @@ def fetch_tasks(env=os.environ, opener=urllib.request.urlopen):
     except ValueError:
         pass
     tasks, structure = tasks_from_html(body)
-    if not tasks:
-        raise TasksError("keine Aufgaben erkannt – Seitenaufbau: " + _structure_summary(structure))
-    return tasks
+    if tasks:
+        return tasks
+    # App-Seite: Aufgaben kommen per JavaScript aus einer Schnittstelle
+    tried = []
+    for endpoint in _endpoints(body, url):
+        path = urllib.parse.urlsplit(endpoint).path  # ohne Query – der Schlüssel bleibt geheim
+        try:
+            found = tasks_from_json(json.loads(_get(endpoint, opener)))
+        except Exception as exc:
+            tried.append(f"{path} ({type(exc).__name__})")
+            continue
+        if found is not None:
+            print(f"Aufgaben aus Schnittstelle {path}")
+            return found
+        tried.append(f"{path} (kein Aufgaben-JSON)")
+    scripts = " ".join(SCRIPT_RE.findall(body))
+    raise TasksError(
+        "keine Aufgaben erkannt – Seitenaufbau: " + _structure_summary(structure)
+        + f" | Skript: {len(scripts)} Zeichen, localStorage: "
+        + ("ja" if "localStorage" in scripts else "nein")
+        + f", fetch-Ziele: {', '.join(tried) or 'keine'}")
 
 
 def due_today(tasks, today):

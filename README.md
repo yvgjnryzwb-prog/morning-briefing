@@ -65,6 +65,12 @@ bisher mit seinen eigenen Stimmen vor. Stimme und Tempo stehen in `news/feeds.js
   `{"date": "2026-09-26", "counts": {"einladung": 1, "absage": 2}}`.
   Optional nennt das Briefing zusätzlich die Zahl wichtiger neuer Mails (ungelesen, ohne
   Newsletter, Massen- und No-Reply-Mails): `"mail": {"important": true}` in `news/feeds.json`.
+- **Aufgaben:** Danach liest das Briefing die heute fälligen offenen Aufgaben aus dem eigenen
+  Aufgaben-Dashboard vor (mit Titeln, höchstens sechs, dazu die Zahl überfälliger Aufgaben).
+  Die Adresse samt Zugangsschlüssel steht **nur** im Secret `TASKS_URL`, nie im Repo oder Log.
+  Gelesen wird JSON oder die HTML-Seite (Elemente mit „task“, „aufgabe“ oder „todo“ in Klasse/ID,
+  Datum als `JJJJ-MM-TT`, `TT.MM.JJJJ`, `TT.MM.` oder „heute“, erledigt per Checkbox/Klasse).
+  Erkennt der Parser nichts, loggt er nur den Seitenaufbau (Tags, Klassen), keine Inhalte.
 - `site/briefing.txt` enthält das Briefing als reinen Text, z. B. für externe TTS-Dienste.
 
 ## Lokal ausprobieren

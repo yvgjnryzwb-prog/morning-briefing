@@ -74,7 +74,7 @@ def headline_parts(item, lang, with_summary, prefix=None):
 
 
 def build_briefing(top, sections, categories, now_local, options=None, mail=None,
-                   applications=None):
+                   applications=None, tasks=None):
     """top/sections wie aus collect(); categories aus feeds.json (für Sprache/Opt-out).
 
     mail/applications: fertige Sätze zum Postfach und zu Bewerbungen (nur Zahlen,
@@ -97,6 +97,8 @@ def build_briefing(top, sections, categories, now_local, options=None, mail=None
     if applications:
         segments.append({"id": "bewerbungen", "title": "Bewerbungen",
                          "parts": parts(applications, "de")})
+    if tasks:
+        segments.append({"id": "aufgaben", "title": "Aufgaben", "parts": parts(tasks, "de")})
 
     spoken = set()
     top_parts = []

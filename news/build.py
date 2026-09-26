@@ -18,6 +18,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from briefing import MONTHS, WEEKDAYS, build_briefing, plain_text
+from tasks import TasksError, fetch_tasks, tasks_sentence
 from mail import (MailError, applications_sentence, check_mailbox, load_applications_file,
                   mail_sentence)
 
@@ -357,9 +358,18 @@ def main():
     if isinstance(mailbox, dict):
         print(f"Postfach: {mailbox['important'] if mailbox['important'] is not None else '–'} wichtige Mails, "
               f"{sum(mailbox['applications'].values())} zu Bewerbungen")
+    try:
+        task_list = fetch_tasks()
+    except Exception as exc:  # Log ist öffentlich: nie URL oder Aufgabentitel ausgeben
+        reason = str(exc) if isinstance(exc, TasksError) else type(exc).__name__
+        print(f"WARN Aufgaben nicht geladen: {reason}", file=sys.stderr)
+        task_list = "error"
+    if isinstance(task_list, list):
+        print(f"Aufgaben: {len(task_list)} erkannt")
     briefing = build_briefing(top, sections, config["categories"], now.astimezone(TZ),
                               config.get("briefing"), mail=mail_sentence(mailbox),
-                              applications=applications_sentence(mailbox))
+                              applications=applications_sentence(mailbox),
+                              tasks=tasks_sentence(task_list, now.astimezone(TZ).date()))
     out_dir = args.out.parent
     out_dir.mkdir(parents=True, exist_ok=True)
     if args.audio:

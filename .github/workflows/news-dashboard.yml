@@ -59,6 +59,8 @@ jobs:
           # Optional: ohne diese Secrets entfällt der Postfach-Check einfach
           MAIL_USER: ${{ secrets.MAIL_USER }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          # Optional: Adresse des Aufgaben-Dashboards (enthält Zugangsschlüssel)
+          TASKS_URL: ${{ secrets.TASKS_URL }}
         run: python news/build.py --out site/index.html --audio
 
       - uses: actions/upload-pages-artifact@v3

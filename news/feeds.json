@@ -51,6 +51,9 @@
     "items_per_category": 3,
     "summaries": true
   },
+  "mail": {
+    "important": true
+  },
   "tts": {
     "voice_de": "de-DE-SeraphinaMultilingualNeural",
     "voice_en": "en-GB-SoniaNeural",

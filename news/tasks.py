@@ -227,13 +227,22 @@ def fetch_tasks(env=os.environ, opener=urllib.request.urlopen):
         try:
             found = tasks_from_json(json.loads(_get(endpoint, opener)))
         except Exception as exc:
-            tried.append(f"{path} ({type(exc).__name__})")
+            tried.append(f"{path} ({type(exc).__name__} {getattr(exc, 'code', '')})".replace(" )", ")"))
             continue
         if found is not None:
             print(f"Aufgaben aus Schnittstelle {path}")
             return found
         tried.append(f"{path} (kein Aufgaben-JSON)")
     scripts = " ".join(SCRIPT_RE.findall(body))
+    # Aufrufe der Schnittstelle als Code-Ausschnitt, Schlüssel und lange Werte maskiert
+    calls = []
+    for m in re.finditer(r"fetch\(", scripts):
+        snippet = re.sub(r"\s+", " ", scripts[m.start():m.start() + 220])
+        snippet = re.sub(r"[0-9a-fA-F]{16,}", "***", snippet)
+        calls.append(snippet)
+    for key in dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(url).query)).values():
+        calls = [c.replace(key, "***") for c in calls] if len(key) >= 6 else calls
+    print("DIAG fetch-Aufrufe: " + " ‖ ".join(calls[:6]), file=__import__("sys").stderr)
     raise TasksError(
         "keine Aufgaben erkannt – Seitenaufbau: " + _structure_summary(structure)
         + f" | Skript: {len(scripts)} Zeichen, localStorage: "

@@ -65,9 +65,19 @@
     show("Wird aktualisiert …", true);
     let res;
     try {
-      res = await (await fetch(url, { method: "POST", cache: "no-store" })).json();
+      const r = await fetch(url, { method: "POST", cache: "no-store" });
+      try {
+        res = await r.json();
+      } catch {
+        finish(`Aktualisierung: Server-Antwort unlesbar (HTTP ${r.status}).`);
+        return;
+      }
     } catch {
-      finish("Aktualisierung nicht erreichbar – der Stand oben gilt.");
+      finish("Aktualisierung nicht erreichbar (Server oder CORS) – der Stand oben gilt.");
+      return;
+    }
+    if (res.error) {
+      finish(`Aktualisierung fehlgeschlagen (Server: ${res.error}).`);
       return;
     }
     const since = res.since != null ? res.since * 1000 : Infinity;
@@ -83,7 +93,8 @@
       finish(manual ? `Gerade erst aktualisiert – wieder möglich in ${min} Min.`
                     : "Der Stand oben ist aktuell.");
     } else {
-      finish("Aktualisierung gerade nicht möglich – der Stand oben gilt.");
+      finish(res.status ? `Aktualisierung abgelehnt (GitHub-Status ${res.status}).`
+                        : "Aktualisierung gerade nicht möglich – der Stand oben gilt.");
     }
   }
 

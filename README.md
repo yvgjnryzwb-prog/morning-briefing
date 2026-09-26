@@ -111,3 +111,6 @@ GitHub-API, höchstens alle 5 Minuten; die Seite wartet auf den neuen Stand und 
 2. `server/aktualisieren.php` nach `/briefing/` auf den Server laden.
 3. `server/aktualisieren-token.php.beispiel` als `aktualisieren-token.php` daneben ablegen und den
    Token eintragen. Die Datei ist PHP und wird daher nie im Klartext ausgeliefert.
+4. Zum Prüfen `https://mdtrading.tech/briefing/aktualisieren.php` im Browser öffnen: Der Selbsttest
+   zeigt nur Ja/Nein-Werte (Token-Datei da, Token eingetragen, Ordner beschreibbar, URL-Abruf
+   erlaubt) – alle sollten `true` sein. Der Schlüssel selbst wird nie angezeigt.

@@ -18,7 +18,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from briefing import MONTHS, WEEKDAYS, build_briefing, plain_text
-from tasks import TasksError, fetch_tasks, tasks_sentence
+from tasks import TasksError, fetch_tasks, tasks_sentence, tasks_stats
 from mail import (MailError, applications_sentence, check_mailbox, load_applications_file,
                   mail_sentence)
 
@@ -365,7 +365,7 @@ def main():
         print(f"WARN Aufgaben nicht geladen: {reason}", file=sys.stderr)
         task_list = "error"
     if isinstance(task_list, list):
-        print(f"Aufgaben: {len(task_list)} erkannt")
+        print(f"Aufgaben: {tasks_stats(task_list, now.astimezone(TZ).date())}")
     briefing = build_briefing(top, sections, config["categories"], now.astimezone(TZ),
                               config.get("briefing"), mail=mail_sentence(mailbox),
                               applications=applications_sentence(mailbox),

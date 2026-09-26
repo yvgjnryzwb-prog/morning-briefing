@@ -80,10 +80,17 @@ def _field(item, keys):
     return None
 
 
+LAST_KEYS = Counter()  # Feldnamen der zuletzt gelesenen JSON-Aufgaben (nur für die Diagnose)
+
+
 def tasks_from_json(data):
     items = _task_list(data)
     if items is None:
         return None
+    LAST_KEYS.clear()
+    for item in items:
+        if isinstance(item, dict):
+            LAST_KEYS.update(item.keys())
     tasks = []
     for item in items:
         if not isinstance(item, dict):
@@ -280,6 +287,14 @@ def due_today(tasks, today):
         elif isinstance(t["due"], date) and t["due"] < today:
             overdue.append(t["title"])
     return todays, overdue
+
+
+def tasks_stats(tasks, today):
+    """Nur Zahlen und Feldnamen fürs öffentliche Log."""
+    todays, overdue = due_today(tasks, today)
+    return (f"{len(tasks)} gesamt, {sum(t['done'] for t in tasks)} erledigt, "
+            f"{sum(t['due'] is not None for t in tasks)} mit Datum, heute {len(todays)}, "
+            f"überfällig {len(overdue)} | Felder: {', '.join(k for k, _ in LAST_KEYS.most_common(20))}")
 
 
 def tasks_sentence(result, today, max_titles=6):

@@ -276,6 +276,11 @@ footer {{ margin-top: 32px; color: var(--muted); font-size: .8rem; }}
 .bf-chapters button {{ min-height: 32px; padding: 3px 10px; font-size: .85rem; }}
 .bf-chapters button[aria-current] {{ background: var(--accent); border-color: var(--accent); color: var(--card); }}
 .bf-status:empty {{ display: none; }}
+.refresh-btn {{ margin-top: 6px; font: inherit; font-size: .85rem; color: var(--ink);
+  background: var(--card); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px;
+  min-height: 36px; cursor: pointer; }}
+.refresh-btn:hover {{ border-color: var(--accent); color: var(--accent); }}
+.refresh-btn:disabled {{ opacity: .6; cursor: wait; }}
 .refresh-bar {{ position: sticky; top: 0; z-index: 10; padding: 8px 16px; text-align: center;
   background: var(--accent); color: var(--card); font-size: .9rem; }}
 .bf-unsupported {{ display: none; }}
@@ -288,7 +293,8 @@ footer {{ margin-top: 32px; color: var(--muted); font-size: .8rem; }}
 <div class="wrap">
 <header>
   <div><h1>Morgen-Nachrichten</h1><div class="date">{date}</div></div>
-  <div class="stamp">Stand: <time datetime="{iso}">{updated} Uhr</time><br>{total} Meldungen</div>
+  <div class="stamp">Stand: <time datetime="{iso}">{updated} Uhr</time><br>{total} Meldungen
+    <br><button type="button" class="refresh-btn" hidden>↻ Aktualisieren</button></div>
 </header>
 <section id="briefing" class="briefing" aria-label="Morning-Briefing">
   <div class="bf-head">

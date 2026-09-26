@@ -6,6 +6,7 @@ Klappt das Einlesen nicht, loggt das Modul nur den Aufbau der Seite (Tags, Klass
 keine Inhalte.
 """
 import html
+import http.cookiejar
 import json
 import os
 import re
@@ -202,11 +203,15 @@ def _endpoints(page, page_url):
     return found
 
 
-def fetch_tasks(env=os.environ, opener=urllib.request.urlopen):
+def fetch_tasks(env=os.environ, opener=None):
     """Liste {title, due, done} oder None, wenn TASKS_URL nicht gesetzt ist."""
     url = (env.get("TASKS_URL") or "").strip()
     if not url:
         return None
+    if opener is None:
+        # Wie ein Browser: Sitzungs-Cookie der Seite (Anmeldung per ?k=…) an die API mitschicken
+        jar = http.cookiejar.CookieJar()
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar)).open
     try:
         body = _get(url, opener)
     except Exception as exc:
@@ -242,7 +247,17 @@ def fetch_tasks(env=os.environ, opener=urllib.request.urlopen):
         calls.append(snippet)
     for key in dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(url).query)).values():
         calls = [c.replace(key, "***") for c in calls] if len(key) >= 6 else calls
-    print("DIAG fetch-Aufrufe: " + " ‖ ".join(calls[:6]), file=__import__("sys").stderr)
+    # Wie wird die API angesprochen? Definition von opts und Aufrufe der Hilfsfunktion
+    fn = re.search(r"(?:async\s+)?function\s+(\w+)\s*\([^)]*\)\s*\{[^{}]{0,600}?fetch\(", scripts)
+    if fn:
+        start = fn.start()
+        calls.append("DEF " + re.sub(r"\s+", " ", scripts[start:start + 400]))
+        for m in list(re.finditer(r"\b" + re.escape(fn.group(1)) + r"\(", scripts))[1:6]:
+            calls.append("CALL " + re.sub(r"\s+", " ", scripts[m.start():m.start() + 120]))
+    calls = [re.sub(r"[0-9a-fA-F]{16,}", "***", c) for c in calls]
+    for key in dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(url).query)).values():
+        calls = [c.replace(key, "***") for c in calls] if len(key) >= 6 else calls
+    print("DIAG fetch-Aufrufe: " + " ‖ ".join(calls[:8]), file=__import__("sys").stderr)
     raise TasksError(
         "keine Aufgaben erkannt – Seitenaufbau: " + _structure_summary(structure)
         + f" | Skript: {len(scripts)} Zeichen, localStorage: "

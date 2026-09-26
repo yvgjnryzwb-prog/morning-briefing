@@ -65,6 +65,10 @@ bisher mit seinen eigenen Stimmen vor. Stimme und Tempo stehen in `news/feeds.js
   `{"date": "2026-09-26", "counts": {"einladung": 1, "absage": 2}}`.
   Optional nennt das Briefing zusätzlich die Zahl wichtiger neuer Mails (ungelesen, ohne
   Newsletter, Massen- und No-Reply-Mails): `"mail": {"important": true}` in `news/feeds.json`.
+- **Passende Stellen:** Im Kapitel Bewerbungen nennt das Briefing die Zahl passender Stellen
+  auf Indeed und die Veränderung zum letzten Wert. Die Zahlen schreibt eine tägliche Claude-Routine
+  (ca. 5:40 Uhr, Indeed-Connector) nach `news/jobs.json`, mit derselben Suche wie „Passende
+  Stellen suchen“ im Bewerbungs-Cockpit: `{"history": [{"date": "JJJJ-MM-TT", "count": 23}]}`.
 - **Aufgaben:** Danach liest das Briefing die heute fälligen offenen Aufgaben aus dem eigenen
   Aufgaben-Dashboard vor (mit Titeln, höchstens sechs, dazu die Zahl überfälliger Aufgaben).
   Die Adresse samt Zugangsschlüssel steht **nur** im Secret `TASKS_URL`, nie im Repo oder Log.

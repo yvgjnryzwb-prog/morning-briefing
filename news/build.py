@@ -18,6 +18,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from briefing import MONTHS, WEEKDAYS, build_briefing, plain_text
+from jobs import jobs_sentence, load_jobs
 from tasks import TasksError, fetch_tasks, tasks_sentence, tasks_stats
 from mail import (MailError, applications_sentence, check_mailbox, load_applications_file,
                   mail_sentence)
@@ -368,7 +369,10 @@ def main():
         print(f"Aufgaben: {tasks_stats(task_list, now.astimezone(TZ).date())}")
     briefing = build_briefing(top, sections, config["categories"], now.astimezone(TZ),
                               config.get("briefing"), mail=mail_sentence(mailbox),
-                              applications=applications_sentence(mailbox),
+                              applications=" ".join(filter(None, [
+                                  applications_sentence(mailbox),
+                                  jobs_sentence(load_jobs(HERE / "jobs.json", now.astimezone(TZ).date()),
+                                                now.astimezone(TZ).date())])) or None,
                               tasks=tasks_sentence(task_list, now.astimezone(TZ).date()))
     out_dir = args.out.parent
     out_dir.mkdir(parents=True, exist_ok=True)

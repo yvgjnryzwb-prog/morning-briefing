@@ -98,3 +98,16 @@ open site/index.html   # oder im Browser öffnen
 - Bei öffentlichen Repos pausiert GitHub Zeitpläne nach 60 Tagen ohne Repo-Aktivität.
   Der Workflow lässt sich dann unter **Actions** mit einem Klick wieder aktivieren.
 - Ist ein Feed nicht erreichbar, wird er übersprungen und unten auf der Seite erwähnt.
+
+## Aktualisieren beim Öffnen
+
+Ist die Seite beim Öffnen älter als 5 Minuten, ruft sie `refresh_url` aus `news/feeds.json` auf
+(Standard: `https://mdtrading.tech/briefing/aktualisieren.php`). Das Skript startet den Build per
+GitHub-API, höchstens alle 5 Minuten; die Seite wartet auf den neuen Stand und lädt sich neu
+(ca. 1 Minute). Einrichtung auf dem eigenen Server:
+
+1. Auf GitHub unter *Settings → Developer settings → Fine-grained tokens* einen Token anlegen:
+   nur Repository `morning-briefing`, Berechtigung **Actions: Read and write**.
+2. `server/aktualisieren.php` nach `/briefing/` auf den Server laden.
+3. `server/aktualisieren-token.php.beispiel` als `aktualisieren-token.php` daneben ablegen und den
+   Token eintragen. Die Datei ist PHP und wird daher nie im Klartext ausgeliefert.

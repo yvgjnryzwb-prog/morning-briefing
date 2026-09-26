@@ -276,6 +276,8 @@ footer {{ margin-top: 32px; color: var(--muted); font-size: .8rem; }}
 .bf-chapters button {{ min-height: 32px; padding: 3px 10px; font-size: .85rem; }}
 .bf-chapters button[aria-current] {{ background: var(--accent); border-color: var(--accent); color: var(--card); }}
 .bf-status:empty {{ display: none; }}
+.refresh-bar {{ position: sticky; top: 0; z-index: 10; padding: 8px 16px; text-align: center;
+  background: var(--accent); color: var(--card); font-size: .9rem; }}
 .bf-unsupported {{ display: none; }}
 .briefing.unsupported > :not(.bf-head):not(.bf-unsupported) {{ display: none; }}
 .briefing.unsupported .bf-unsupported {{ display: block; }}
@@ -315,6 +317,7 @@ footer {{ margin-top: 32px; color: var(--muted); font-size: .8rem; }}
 </section>
 <script type="application/json" id="briefing-data">{briefing_json}</script>
 <script src="briefing.js" defer></script>
+<script src="refresh.js" defer></script>
 <nav><a href="#top">Top</a>{nav}</nav>
 <h2 id="top">Auf einen Blick</h2>
 <div class="leads">
@@ -374,6 +377,9 @@ def main():
                                   jobs_sentence(load_jobs(HERE / "jobs.json", now.astimezone(TZ).date()),
                                                 now.astimezone(TZ).date())])) or None,
                               tasks=tasks_sentence(task_list, now.astimezone(TZ).date()))
+    briefing["built"] = now.isoformat(timespec="seconds")
+    if config.get("refresh_url"):
+        briefing["refresh_url"] = config["refresh_url"]
     out_dir = args.out.parent
     out_dir.mkdir(parents=True, exist_ok=True)
     if args.audio:
@@ -391,6 +397,7 @@ def main():
                                            encoding="utf-8")
     (out_dir / "briefing.txt").write_text(plain_text(briefing), encoding="utf-8")
     shutil.copyfile(HERE / "briefing.js", out_dir / "briefing.js")
+    shutil.copyfile(HERE / "refresh.js", out_dir / "refresh.js")
     print(f"{args.out}: {sum(len(s['items']) for s in sections)} Meldungen, "
           f"{len(failed)} Feeds nicht erreichbar, Briefing ca. {briefing['minutes']} Min.")
 

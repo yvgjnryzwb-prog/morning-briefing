@@ -1,0 +1,4 @@
+<?php
+// Kopie als "aktualisieren-token.php" neben aktualisieren.php ablegen und den eigenen
+// GitHub-Schlüssel eintragen (Fine-grained token, nur Repo morning-briefing, Actions: Read and write).
+return 'github_pat_HIER_DEN_SCHLUESSEL_EINTRAGEN';

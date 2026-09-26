@@ -51,6 +51,7 @@
     "items_per_category": 3,
     "summaries": true
   },
+  "refresh_url": "https://mdtrading.tech/briefing/aktualisieren.php",
   "mail": {
     "important": true
   },

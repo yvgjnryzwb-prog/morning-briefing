@@ -73,6 +73,12 @@ def headline_parts(item, lang, with_summary, prefix=None):
     return out
 
 
+def greeting(now_local):
+    if now_local.hour < 11:
+        return "Guten Morgen!"
+    return "Guten Tag!" if now_local.hour < 18 else "Guten Abend!"
+
+
 def build_briefing(top, sections, categories, now_local, options=None, mail=None,
                    applications=None, tasks=None):
     """top/sections wie aus collect(); categories aus feeds.json (für Sprache/Opt-out).
@@ -89,7 +95,7 @@ def build_briefing(top, sections, categories, now_local, options=None, mail=None
     segments = [{
         "id": "intro",
         "title": "Begrüßung",
-        "parts": parts(f"Guten Morgen! Heute ist {date}. "
+        "parts": parts(f"{greeting(now_local)} Heute ist {date}. "
                        f"Hier ist dein Morning-Briefing, Stand {now_local:%H:%M} Uhr.", "de"),
     }]
     if mail:

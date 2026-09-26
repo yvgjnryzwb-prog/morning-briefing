@@ -6,6 +6,9 @@ on:
     # Beide Zeiten sind eingeplant, der Check-Schritt lässt nur die passende durch.
     - cron: '0 4 * * *'
     - cron: '0 5 * * *'
+    # Tagsüber stündlich aktualisieren (neue Aufgaben, Mails, Nachrichten); der Check-Schritt
+    # lässt nur Läufe zwischen 7 und 22 Uhr Berliner Zeit durch.
+    - cron: '7 4-21 * * *'
   workflow_dispatch:
 
 permissions:
@@ -30,9 +33,11 @@ jobs:
           SCHEDULE: ${{ github.event.schedule }}
         run: |
           offset=$(TZ=Europe/Berlin date +%z)   # +0200 (MESZ) oder +0100 (MEZ)
+          hour=$(TZ=Europe/Berlin date +%-H)
           if [ "$EVENT" != "schedule" ] \
              || { [ "$SCHEDULE" = "0 4 * * *" ] && [ "$offset" = "+0200" ]; } \
-             || { [ "$SCHEDULE" = "0 5 * * *" ] && [ "$offset" = "+0100" ]; }; then
+             || { [ "$SCHEDULE" = "0 5 * * *" ] && [ "$offset" = "+0100" ]; } \
+             || { [ "$SCHEDULE" = "7 4-21 * * *" ] && [ "$hour" -ge 7 ] && [ "$hour" -le 22 ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "Übersprungen: $SCHEDULE passt nicht zu Berliner Offset $offset"
